@@ -1,0 +1,120 @@
+<?php
+session_start();
+include('../config.php');
+if(empty($_SESSION['username'])){
+header("location:../index.php");
+}
+// Membuat waktu sesuai activitas terakhir kita pada website tersebut bedasarkan atribut username
+$last = $_SESSION['username'];
+$queryupdate = mysqli_query($koneksi,"UPDATE users SET last_activity=now() WHERE username='$last'");
+?>
+<!DOCTYPE html>
+<html>
+<?php
+$user = $_SESSION['username'];
+$query = mysqli_query($koneksi,"SELECT fullname,job_title,last_activity FROM users WHERE username='$user'");
+$data = mysqli_fetch_array($query);
+?>
+  <head>
+    <title> <?php echo $data['fullname']; ?> - AES-128</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="../assets/plugins/datatables/css/jquery.dataTables.css">
+  </head>
+  <body class="sidebar-mini fixed">
+    <?php include('navmenu.php'); ?>
+      <div class="content-wrapper">
+        <div class="page-title">
+          <div>
+            <h1></i>Dekripsi Berkas</h1>
+          </div>
+          <div>
+            <ul class="breadcrumb">
+              
+            </ul>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table id="file" class="table striped">
+                    <thead class="bg-primary">
+                        <tr>
+                          <td width="5%"><strong>No</strong></td>
+                          <td width="20%"><strong>Nama Sumber Berkas</strong></td>
+                          <td width="20%"><strong>Nama Berkas Enkripsi</strong></td>
+                          <td width="20%"><strong>Path Berkas</strong></td>
+                          <td width="15%"><strong>Status Berkas</strong></td>
+                          <td width="10%"><strong>Opsi</strong></td>
+                        </tr>
+                      </thead>
+                        <tbody>
+                        <?php
+                        // Menampilkan data dari tabel file
+                          $i = 1;
+                          $query = mysqli_query($koneksi,"SELECT * FROM file");
+                          while ($data = mysqli_fetch_array($query)) { ?>
+                          <tr>
+                            <td><?php echo $i; ?></td>
+                            <td><?php echo $data['file_name_source']; ?></td>
+                            <td><?php echo $data['file_name_finish']; ?></td>
+                            <td><?php echo $data['file_url']; ?></td>
+                            <!-- Pengecekan Data Tersebut Statusnya sudah Terenkripsi atau Terdekripsi -->
+                            <td><?php if ($data['status'] == 1) {
+                              echo "Enkripsi";
+                            }elseif ($data['status'] == 2) {
+                              echo "Dekripsi";
+                            }else {
+                              echo "Status Tidak Diketahui";
+                            }
+                             ?></td>
+                            <td>
+                              <?php
+                              $a = $data['id_file'];
+                              if ($data['status'] == 1) {
+                                echo '<a href="decrypt-file.php?id_file='.$a.'" class="btn btn-warning">Dekripsi Berkas</a>';
+                              }elseif ($data['status'] == 2) {
+                                echo '<a href="encrypt.php" class="btn btn-success">Enkripsi Berkas</a>';
+                              }else {
+                                echo '<a href="decrypt.php" class="btn btn-danger">Data Tidak Diketahui</a>';
+                              }
+                               ?>
+
+                             </td>
+                          </tr>
+                          <?php
+                          $i++;
+                        } ?>
+                        </tbody>
+                      </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="../assets/js/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+        $('#file').dataTable({
+            "bPaginate": true,
+            "bLengthChange": false,
+            "bFilter": true,
+            "bInfo": true,
+            "bAutoWidth": true,
+          "order": [0, "asc"]
+        });
+        });
+        </script>
+    <script src="../assets/js/essential-plugins.js"></script>
+    <script src="../assets/js/bootstrap.min.js"></script>
+    <script src="../assets/plugins/datatables/js/jquery.dataTables.js"></script>
+    <script src="../assets/js/plugins/pace.min.js"></script>
+    <script src="../assets/js/main.js"></script>
+  </body>
+</html>
